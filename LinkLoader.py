@@ -14,13 +14,11 @@ class LinkLoader:
         self.driver = webdriver.Firefox()
 
         # load input data
-        directory = pd.read_csv("input/directory.csv")
+        directory = pd.read_csv("input/directory.csv", encoding="latin-1")
         self.directory = directory.sample(frac=1)
         # self.directory = directory
-        self.setting = pd.read_csv("input/setting.csv")
-        self.before = pd.read_csv("input/before.csv")
-        self.iteration = pd.read_csv("input/iteration.csv")
-        self.stop = pd.read_csv("input/stop_link.csv")["link"]
+        self.setting = pd.read_csv("input/setting.csv", encoding="latin-1")
+        self.stop = pd.read_csv("input/stop_link.csv", encoding="latin-1")["link"]
 
         # initiate data output
         self.stats = pd.DataFrame(self.setting["firm"], columns=["firm", "links"]).fillna(0)
@@ -47,24 +45,23 @@ class LinkLoader:
 
     def handle(self, url):
         # prepare page, usually cookies
-        before = self.before.loc[self.before["firm"] == url[0]]["element"].values
-        if before.size != 0:
-            for element in before:
-                try:
-                    if element[0] == "/" or element[0] == "(":
-                        element = WebDriverWait(self.driver, 3, 3).until(
-                            EC.element_to_be_clickable((By.XPATH, element)))
-                        element.click()
-                    else:
-                        element = WebDriverWait(self.driver, 3, 3).until(
-                            EC.element_to_be_clickable((By.CSS_SELECTOR, element)))
-                        element.click()
-                except Exception as e:
-                    print("error: could not click before element")
-                    print(e)
-                    break
+        before = self.setting.loc[self.setting["firm"]==url[0]]["before"].values[0]
+        if before != "empty":
+            try:
+                if before[0] == "/" or before[0] == "(":
+                    element = WebDriverWait(self.driver, 3, 3).until(
+                        EC.element_to_be_clickable((By.XPATH, before)))
+                    element.click()
                 else:
-                    time.sleep(3)
+                    element = WebDriverWait(self.driver, 3, 3).until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, before)))
+                    element.click()
+            except Exception as e:
+                print("error: could not click before element")
+                print(e)
+                pass
+            else:
+                time.sleep(3)
         else:
             print("error: no before element found for url")
 
@@ -82,15 +79,15 @@ class LinkLoader:
         else:
             # save data to csv
             self.save(url)
-            pagination = self.setting.loc[self.setting["firm"] == url[0]]["pagination"].values
-            if pagination.size != 0:
+            pagination = self.setting.loc[self.setting["firm"] == url[0]]["pagination"].values[0]
+            if pagination:
                 for i in range(1, 110):
                     print(i)
                     # load more data
-                    if pagination[0] == "click":
+                    if pagination == "click":
                         if not self.click_load(url):
                             break
-                    elif pagination[0] == "scroll":
+                    elif pagination == "scroll":
                         if not self.scroll_load() and i != 1:
                             break
 
@@ -128,32 +125,31 @@ class LinkLoader:
             pass
 
     def click_load(self, url):
-        iteration = self.iteration.loc[self.iteration["firm"] == url[0]]["element"].values
-        if iteration.size != 0:
-            for element in iteration:
-                self.scroll_down()
-                time.sleep(1)
-                try:
-                    # click element
-                    if element[0] == "/" or element[0] == "(":
-                        self.driver.execute_script("arguments[0].click();", WebDriverWait(self.driver, 3).until(
-                            EC.element_to_be_clickable((By.XPATH, element))))
-                    else:
-                        self.driver.execute_script("arguments[0].click();", WebDriverWait(self.driver, 3).until(
-                            EC.element_to_be_clickable((By.CSS_SELECTOR, element))))
-                # if 'load more'/'next page' button dissapears
-                # assume end of pagination has been reached
-                except NoSuchElementException:
-                    return False
-                except Exception as e:
-                    print("error: could not click next/load element")
-                    print(e)
-                    return False
+        iteration = self.setting.loc[self.setting["firm"] == url[0]]["iteration"].values[0]
+        if iteration:
+            self.scroll_down()
+            time.sleep(1)
+            try:
+                # click element
+                if iteration[0] == "/" or iteration[0] == "(":
+                    self.driver.execute_script("arguments[0].click();", WebDriverWait(self.driver, 3).until(
+                        EC.element_to_be_clickable((By.XPATH, iteration))))
                 else:
-                    # allow page to finish loading
-                    # before next click
-                    time.sleep(6)
-                    return True
+                    self.driver.execute_script("arguments[0].click();", WebDriverWait(self.driver, 3).until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, iteration))))
+            # if 'load more'/'next page' button dissapears
+            # assume end of pagination has been reached
+            except NoSuchElementException:
+                return False
+            except Exception as e:
+                print("error: could not click next/load element")
+                print(e)
+                return False
+            else:
+                # allow page to finish loading
+                # before next click
+                time.sleep(6)
+                return True
         else:
             print("error: could not find iteration element for url")
             return False
