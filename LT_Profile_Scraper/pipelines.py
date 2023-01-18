@@ -34,6 +34,13 @@ class LtProfileScraperPipeline:
         self.failed = []
         self.error = []
 
+        self.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Token {open("input/token.txt").read()}',
+            'Accept': 'application/json'
+        }
+        self.url = "https://legaltarget.backend-api.io/api/solicitors/"
+
     def process_item(self, item, spider):
         #
         # Create Item Object
@@ -86,10 +93,12 @@ class LtProfileScraperPipeline:
                         counter = counter + 1
 
             response = self.send_lt(profiles_dict)
-            if response["data"][0]["result"]["matched"]:
+            if response != False and response["data"][0]["result"]["matched"]:
                 self.general_stats["matches"] = self.general_stats["matches"] + 1
+                print(f"response: {response}")
             else:
                 self.save_failed_profile(profiles_dict)
+                print("could not send to LT")
 
             self.general_stats["links"] = self.general_stats["links"] + 1
             self.save_profile(profiles_dict)
@@ -105,18 +114,14 @@ class LtProfileScraperPipeline:
         #
         # Send to LT
         #
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token 91ac625c51b7ddeda8e864c3370d68c8a64ff413',
-            'Accept': 'application/json'
-        }
-        url = "https://legaltarget.backend-api.io/api/solicitors/"
         payload = json.dumps(profile_dict)
-        # response = requests.request("PATCH", url, headers=headers, data=payload)
-        # response = json.loads(response.content)
-        response = {"data": [{"result": {"matched": True}}]}
-        print(f"response: {response}")
-        return response
+        response = requests.request("PATCH", self.url, headers=self.headers, data=payload)
+        try:
+            response = json.loads(response.content)
+            return response
+        except Exception as e:
+            print("failed to send to LT")
+            return False
 
     def save_general_stats(self):
         #

@@ -8,11 +8,11 @@ class ProfileSpider(scrapy.Spider):
 
     def __init__(self):
         self.name = "profile"
-        self.setting = pd.read_csv("input/setting.csv")
+        self.setting = pd.read_csv("input/setting.csv", encoding="latin-1")
         self.CP = ContactParser()
 
     def start_requests(self):
-        links_df = pd.read_csv("output/links.csv")
+        links_df = pd.read_csv("output/links.csv", encoding="latin-1")
         for index, row in links_df.iterrows():
             yield scrapy.Request(
                 url=row["link"],
