@@ -68,7 +68,7 @@ class LinkLoader:
         # scroll down to load links
         # before checking if links are present
         self.scroll_down()
-        time.sleep(10)
+        time.sleep(3)
 
         # check links are present (and parse into memory)
         if not self.parse_links(url):
@@ -148,7 +148,7 @@ class LinkLoader:
             else:
                 # allow page to finish loading
                 # before next click
-                time.sleep(6)
+                time.sleep(3)
                 return True
         else:
             print("error: could not find iteration element for url")
@@ -165,7 +165,7 @@ class LinkLoader:
             return False
         finally:
             # allow page to load
-            time.sleep(6)
+            time.sleep(3)
             # check if page end has been reached
             # meaning no more data can be downloaded
             # by scrolling
