@@ -92,7 +92,7 @@ class LtProfileScraperPipeline:
                             profiles_dict["linkedin"] = linkedin
                         counter = counter + 1
 
-            response = self.send_lt(profiles_dict)
+            response = self.send_lt(profiles_dict, dont_send=False)
             if response != False and response["data"][0]["result"]["matched"]:
                 self.general_stats["matches"] = self.general_stats["matches"] + 1
                 print(f"response: {response}")
@@ -110,18 +110,21 @@ class LtProfileScraperPipeline:
             self.save_error(item)
             return None
 
-    def send_lt(self, profile_dict):
+    def send_lt(self, profile_dict, dont_send=False):
         #
         # Send to LT
         #
-        payload = json.dumps(profile_dict)
-        response = requests.request("PATCH", self.url, headers=self.headers, data=payload)
-        try:
-            response = json.loads(response.content)
-            return response
-        except Exception as e:
-            print("failed to send to LT")
-            return False
+        if dont_send:
+            return {"data":[{"result":{"matched":True}}]}
+        else:
+            payload = json.dumps(profile_dict)
+            response = requests.request("PATCH", self.url, headers=self.headers, data=payload)
+            try:
+                response = json.loads(response.content)
+                return response
+            except Exception as e:
+                print("failed to send to LT")
+                return False
 
     def save_general_stats(self):
         #

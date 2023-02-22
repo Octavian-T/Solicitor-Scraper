@@ -48,7 +48,7 @@ class ProfileSpider(scrapy.Spider):
         load_item = {
             # id
             "Url": response.url,
-            "Firm": firm,
+            "Firm": int(self.setting.loc[self.setting["firm"] == firm]["firm_id"].values[0]),
             "Firm_URL": self.setting.loc[self.setting["firm"] == firm]["firm_url"].values[0],
             "Name": name,
             # data
