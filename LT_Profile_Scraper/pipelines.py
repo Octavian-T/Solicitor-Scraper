@@ -53,6 +53,7 @@ class LtProfileScraperPipeline:
             }
             if item["Title"] is not None and item["Title"] != "":
                 self.general_stats["titles"] = self.general_stats["titles"] + 1
+                profiles_dict["titles"] = item["Title"]
             if item["Bio"] is not None and item["Bio"] != "":
                 self.general_stats["bios"] = self.general_stats["bios"] + 1
             if item["Sector"] is not None and item["Sector"] != "":

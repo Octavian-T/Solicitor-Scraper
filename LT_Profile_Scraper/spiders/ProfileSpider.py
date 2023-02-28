@@ -1,6 +1,7 @@
 import scrapy
 from ..items import Profile
 from .tools.ContactParser import ContactParser
+from .tools.BioParser import BioParser
 import pandas as pd
 
 
@@ -10,6 +11,7 @@ class ProfileSpider(scrapy.Spider):
         self.name = "profile"
         self.setting = pd.read_csv("input/setting.csv", encoding="latin-1")
         self.CP = ContactParser()
+        self.BP = BioParser()
 
     def start_requests(self):
         links_df = pd.read_csv("output/links.csv", encoding="latin-1")
@@ -21,30 +23,18 @@ class ProfileSpider(scrapy.Spider):
             )
 
     def parse(self, response, firm):
+        #
+        # CSS
+        #
         name_css = self.setting.loc[self.setting["firm"] == firm]["name_css"].values[0]
-        name = self.parse_name(response=response, name_css=name_css)
-        #
-        # section css
-        #
-        section = self.setting.loc[self.setting["firm"] == firm]["section_css"].values[0]
-        if section != "empty":
-            if section[0] == "/" or section[0] == "(":
-                html = str(response.xpath(section).get())
-            elif section[0] == "c":
-                if "contains" not in section:
-                    new_css = section
-                    new_css = new_css.replace("concat", "")
-                    new_css = new_css.replace(",", "|")
-                    html = str(response.xpath(new_css).get())
-                else:
-                    html = str(response.xpath(section).get())
-            else:
-                html = str(response.css(section).get())
-        else:
-            html = str(response.body)
+        title_css = self.setting.loc[self.setting["firm"] == firm]["title_css"].values[0]
+
         #
         # data load
         #
+        html = str(response.body)
+        name = self.BP.parse_name(response=response, name_css=name_css)
+
         load_item = {
             # id
             "Url": response.url,
@@ -56,10 +46,11 @@ class ProfileSpider(scrapy.Spider):
             "Mobile": self.CP.parse_phone(html, mobile=True),
             "Email": self.CP.parse_email(html=html, name=name),
             "Linkedin": self.CP.parse_linkedin(html),
-            "Title": "null",
+            "Title": self.BP.parse_title(response=response, css=title_css),
             "Bio": "null",
             "Sector": "null"
         }
+
         item = Profile()
         item["Sector"] = load_item["Sector"]
         item["Url"] = load_item["Url"]
@@ -73,44 +64,3 @@ class ProfileSpider(scrapy.Spider):
         item["Title"] = load_item["Title"]
         item["Bio"] = load_item["Bio"]
         yield item
-
-    @staticmethod
-    def parse_name(response, name_css):
-        if name_css[0] == "/" or name_css[0] == "(":
-            try:
-                name = response.xpath(f"{name_css}/text()[normalize-space()]").get()
-            except Exception as e:
-                print(e)
-                return None
-        elif name_css[0] == "c":
-            try:
-                name = response.xpath(f"{name_css}").get()
-            except Exception as e:
-                print(e)
-                return None
-        elif name_css[0:6] == "%title":
-            try:
-                sep = name_css[6:].split('"')[1]
-                pos = name_css[6:].split('%')[1]
-                name = response.xpath("//title/text()").get()
-                name = name.split(sep)[int(pos)]
-            except Exception as e:
-                print(e)
-                return None
-        else:
-            try:
-                name = response.css(f"{name_css}::text").get()
-            except Exception as e:
-                print(e)
-                return None
-
-        if name:
-            try:
-                name = name.strip()
-                name = ' '.join(name.split())
-                return name
-            except Exception as e:
-                print(e)
-                return None
-        else:
-            return None
