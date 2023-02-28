@@ -4,6 +4,7 @@ import phonenumbers
 from phonenumbers import carrier
 from phonenumbers.phonenumberutil import number_type
 import pandas as pd
+from urllib.parse import urlparse
 
 
 class ContactParser:
@@ -135,13 +136,10 @@ class ContactParser:
         if linkedins:
             new_linkedins = []
             for linkedin in linkedins:
-                if "http" or "https" in linkedin:
-                    new_linkedins.append(linkedin)
-                else:
-                    new_linkedins.append(f"https://{linkedin}")
-            if len(new_linkedins) == 1:
-                return ", ".join(list(set(linkedins)))
-            else:
-                return None
+                url = urlparse(linkedin)
+                if url.scheme == "":
+                    url = url._replace(scheme="https")
+                new_linkedins.append(url.geturl().replace("///", "//"))
+            return ", ".join(list(set(new_linkedins)))
         else:
             return None
