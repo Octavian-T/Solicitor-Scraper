@@ -206,7 +206,10 @@ class LinkLoader:
                 links = []
                 for element in elements:
                     try:
-                        links.append(element.get_attribute("href"))
+                        element = element.get_attribute("href")
+                        if element == None:
+                            continue
+                        links.append(element)
                     except Exception as e:
                         print(e)
                         return False
