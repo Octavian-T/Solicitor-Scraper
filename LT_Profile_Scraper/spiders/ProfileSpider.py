@@ -30,9 +30,28 @@ class ProfileSpider(scrapy.Spider):
         title_css = self.setting.loc[self.setting["firm"] == firm]["title_css"].values[0]
 
         #
+        # section css
+        #
+        section = self.setting.loc[self.setting["firm"] == firm]["section_css"].values[0]
+        if section != "empty":
+            if section[0] == "/" or section[0] == "(":
+                html = str(response.xpath(section).get())
+            elif section[0] == "c":
+                if "contains" not in section:
+                    new_css = section
+                    new_css = new_css.replace("concat", "")
+                    new_css = new_css.replace(",", "|")
+                    html = str(response.xpath(new_css).get())
+                else:
+                    html = str(response.xpath(section).get())
+            else:
+                html = str(response.css(section).get())
+        else:
+            html = str(response.body)
+
+        #
         # data load
         #
-        html = str(response.body)
         name = self.BP.parse_name(response=response, name_css=name_css)
 
         load_item = {
