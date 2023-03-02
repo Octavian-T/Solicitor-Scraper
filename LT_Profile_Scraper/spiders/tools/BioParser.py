@@ -8,11 +8,18 @@ class BioParser:
     @staticmethod
     def parse_name(response, name_css):
         if name_css[0] == "/" or name_css[0] == "(":
-            try:
-                name = response.xpath(f"{name_css}/text()[normalize-space()]").get()
-            except Exception as e:
-                print(e)
-                return None
+            if "text()" in name_css:
+                try:
+                    name = response.xpath(f"{name_css}").get()
+                except Exception as e:
+                    print(e)
+                    return None
+            else:
+                try:
+                    name = response.xpath(f"{name_css}/text()[normalize-space()]").get()
+                except Exception as e:
+                    print(e)
+                    return None
         elif name_css[0] == "c":
             try:
                 name = response.xpath(f"{name_css}").get()

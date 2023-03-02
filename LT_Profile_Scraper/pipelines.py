@@ -51,15 +51,18 @@ class LtProfileScraperPipeline:
                 "name": item["Name"],
                 "profile_url": item["Url"],
             }
-            if item["Title"] is not None and item["Title"] != "":
-                self.general_stats["titles"] = self.general_stats["titles"] + 1
-                profiles_dict["titles"] = item["Title"]
+
             if item["Bio"] is not None and item["Bio"] != "":
                 self.general_stats["bios"] = self.general_stats["bios"] + 1
             if item["Sector"] is not None and item["Sector"] != "":
                 for sector in item["Sector"].split(", "):
                     if sector != "" and sector is not None:
                         self.general_stats["sectors"] = self.general_stats["sectors"] + 1
+
+            if item["Title"] is not None and item["Title"] != "":
+                self.general_stats["titles"] = self.general_stats["titles"] + 1
+                profiles_dict["title"] = item["Title"]
+
             if item["Phone"] is not None:
                 counter = 0
                 for phone in item["Phone"].split(", "):
@@ -93,7 +96,7 @@ class LtProfileScraperPipeline:
                             profiles_dict["linkedin"] = linkedin
                         counter = counter + 1
 
-            response = self.send_lt(profiles_dict, dont_send=False)
+            response = self.send_lt(profiles_dict, dont_send=True)
             if response != False and response["data"][0]["result"]["matched"]:
                 self.general_stats["matches"] = self.general_stats["matches"] + 1
                 print(f"response: {response}")
@@ -111,7 +114,7 @@ class LtProfileScraperPipeline:
             self.save_error(item)
             return None
 
-    def send_lt(self, profile_dict, dont_send=False):
+    def send_lt(self, profile_dict, dont_send=True):
         #
         # Send to LT
         #
