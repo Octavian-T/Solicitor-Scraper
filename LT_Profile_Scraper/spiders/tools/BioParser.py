@@ -1,9 +1,10 @@
-from bs4 import BeautifulSoup
+import pandas as pd
 
 
 class BioParser:
     def __init__(self):
-        self.data = ''
+        self.titles = pd.read_csv("input/titles.csv", encoding="latin-1")
+        self.titles_long = pd.read_csv("input/titles_long.csv", encoding="latin-1")
 
     @staticmethod
     def parse_name(response, name_css):
@@ -53,15 +54,14 @@ class BioParser:
         else:
             return None
 
-    @staticmethod
-    def parse_title(response, css):
+    def parse_title(self, response, css):
         if css[0] == "/" or css[0] == "(":
             try:
                 title = response.xpath(f"{css}/text()[normalize-space()]").get()
             except Exception as e:
                 print(e)
                 return None
-        elif css[0] == "c":
+        elif "/text()" in css:
             try:
                 title = response.xpath(f"{css}").get()
             except Exception as e:
@@ -76,9 +76,13 @@ class BioParser:
 
         if title:
             try:
-                title = title.strip()
-                title = ' '.join(title.split())
-                return title
+                for index, row in self.titles_long.iterrows():
+                    matches = [x for x in row["title"] if x in title]
+                    if matches:
+                        return row["title"]
+                for index, row in self.titles.iterrows():
+                    if row["title"] in title:
+                        return row["title"]
             except Exception as e:
                 print(e)
                 return None

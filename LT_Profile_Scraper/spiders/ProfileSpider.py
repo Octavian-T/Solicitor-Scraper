@@ -1,5 +1,3 @@
-import time
-
 import scrapy
 from ..items import Profile
 from .tools.ContactParser import ContactParser

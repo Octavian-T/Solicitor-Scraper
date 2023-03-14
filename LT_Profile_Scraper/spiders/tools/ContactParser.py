@@ -1,5 +1,4 @@
 import re
-from bs4 import BeautifulSoup
 import phonenumbers
 from phonenumbers import carrier
 from phonenumbers.phonenumberutil import number_type
@@ -15,15 +14,7 @@ class ContactParser:
 
     def parse_phone(self, html, mobile=False):
         phones = []
-        soup = BeautifulSoup(html, "html.parser")
-        string = ""
-        for ele in soup.find_all():
-            for attr in ele.attrs.values():
-                if type(attr) == list:
-                    string = f"{string} {' '.join(attr)}"
-                else:
-                    string = f"{string} {attr}"
-        matcher = phonenumbers.PhoneNumberMatcher(f"{soup.get_text(' ')} {string}", "GB")
+        matcher = phonenumbers.PhoneNumberMatcher(html, "GB")
         if matcher.has_next():
             for match in matcher:
                 # country check
@@ -62,35 +53,15 @@ class ContactParser:
             return None
 
     @staticmethod
-    def regex_parse(regex, html, element_par=False):
+    def regex_parse(regex, html):
         values = []
-        soup = BeautifulSoup(html, "html.parser")
-        if element_par:
-            for ele in soup.find_all():
-                for attr in ele.attrs.values():
-                    if type(attr) == list:
-                        match = re.findall(regex, ' '.join(attr))
-                        if type(match) == list:
-                            for value in match:
-                                values.append(value)
-                        elif type(match) is not None:
-                            values.append(match)
-                    else:
-                        match = re.findall(regex, attr)
-                        if match:
-                            if type(match) == list:
-                                for value in match:
-                                    values.append(value)
-                            elif type(match) is not None:
-                                values.append(match)
-        else:
-            match = re.findall(regex, soup.get_text(' '))
-            if match:
-                if type(match) == list:
-                    for value in match:
-                        values.append(value)
-                elif type(match) is not None:
-                    values.append(match)
+        match = re.findall(regex, html)
+        if match:
+            if type(match) == list:
+                for value in match:
+                    values.append(value)
+            elif type(match) is not None:
+                values.append(match)
         if values:
             return values
         else:
@@ -132,7 +103,7 @@ class ContactParser:
     def parse_linkedin(self, html):
         LINKEDIN_REGEX = r'linkedin\.com\/in\/[A-z0-9_-]+\/?|'\
                          r'uk\.linkedin\.com\/in\/[A-z0-9_-]+\/?'
-        linkedins = self.regex_parse(html=html, regex=LINKEDIN_REGEX, element_par=True)
+        linkedins = self.regex_parse(html=html, regex=LINKEDIN_REGEX)
         if linkedins:
             new_linkedins = []
             for linkedin in linkedins:
