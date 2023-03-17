@@ -1,10 +1,13 @@
 import pandas as pd
+import re
 
 
 class BioParser:
     def __init__(self):
         self.titles = pd.read_csv("input/titles.csv", encoding="latin-1")
         self.titles_long = pd.read_csv("input/titles_long.csv", encoding="latin-1")
+        self.titles = self.titles.rename(columns={"ï»¿title": "title"})
+        self.titles_long = self.titles_long.rename(columns={"ï»¿title": "title"})
 
     @staticmethod
     def parse_name(response, name_css):
@@ -77,12 +80,12 @@ class BioParser:
         if title:
             try:
                 for index, row in self.titles_long.iterrows():
-                    matches = [x for x in row["title"] if x in title]
-                    if matches:
+                    if any(re.findall(rf"{row['title']}", title, re.IGNORECASE)):
                         return row["title"]
                 for index, row in self.titles.iterrows():
-                    if row["title"] in title:
+                    if any(re.findall(rf"{row['title']}", title, re.IGNORECASE)):
                         return row["title"]
+                return None
             except Exception as e:
                 print(e)
                 return None
