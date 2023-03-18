@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import NoSuchElementException
 import pandas as pd
 from urllib.parse import urlparse
@@ -45,16 +45,16 @@ class LinkLoader:
 
     def handle(self, url):
         # prepare page, usually cookies
-        before = self.setting.loc[self.setting["firm"]==url[0]]["before"].values[0]
+        before = self.setting.loc[self.setting["firm"] == url[0]]["before"].values[0]
         if before != "empty":
             try:
                 if before[0] == "/" or before[0] == "(":
                     element = WebDriverWait(self.driver, 3, 3).until(
-                        EC.element_to_be_clickable((By.XPATH, before)))
+                        ec.element_to_be_clickable((By.XPATH, before)))
                     element.click()
                 else:
                     element = WebDriverWait(self.driver, 3, 3).until(
-                        EC.element_to_be_clickable((By.CSS_SELECTOR, before)))
+                        ec.element_to_be_clickable((By.CSS_SELECTOR, before)))
                     element.click()
             except Exception as e:
                 print("error: could not click before element")
@@ -133,11 +133,11 @@ class LinkLoader:
                 # click element
                 if iteration[0] == "/" or iteration[0] == "(":
                     self.driver.execute_script("arguments[0].click();", WebDriverWait(self.driver, 3).until(
-                        EC.element_to_be_clickable((By.XPATH, iteration))))
+                        ec.element_to_be_clickable((By.XPATH, iteration))))
                 else:
                     self.driver.execute_script("arguments[0].click();", WebDriverWait(self.driver, 3).until(
-                        EC.element_to_be_clickable((By.CSS_SELECTOR, iteration))))
-            # if 'load more'/'next page' button dissapears
+                        ec.element_to_be_clickable((By.CSS_SELECTOR, iteration))))
+            # if 'load more'/'next page' button disappears
             # assume end of pagination has been reached
             except NoSuchElementException:
                 return False
@@ -207,7 +207,7 @@ class LinkLoader:
                 for element in elements:
                     try:
                         element = element.get_attribute("href")
-                        if element == None:
+                        if element is None:
                             continue
                         links.append(element)
                     except Exception as e:
@@ -244,7 +244,7 @@ class LinkLoader:
                         self.links_df.append(
                             pd.DataFrame({
                                 "link": link,
-                                 "firm": url[0]
+                                "firm": url[0]
                             },
                                 index=[0]
                             ))

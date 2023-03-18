@@ -97,7 +97,7 @@ class LtProfileScraperPipeline:
                         counter = counter + 1
 
             response = self.send_lt(profiles_dict, dont_send=True)
-            if response != False and response["data"][0]["result"]["matched"]:
+            if response is not False and response["data"][0]["result"]["matched"]:
                 self.general_stats["matches"] = self.general_stats["matches"] + 1
                 print(f"response: {response}")
             else:
@@ -119,7 +119,7 @@ class LtProfileScraperPipeline:
         # Send to LT
         #
         if dont_send:
-            return {"data":[{"result":{"matched":True}}]}
+            return {"data": [{"result": {"matched": True}}]}
         else:
             payload = json.dumps(profile_dict)
             response = requests.request("PATCH", self.url, headers=self.headers, data=payload)
@@ -128,6 +128,7 @@ class LtProfileScraperPipeline:
                 return response
             except Exception as e:
                 print("failed to send to LT")
+                print(e)
                 return False
 
     def save_general_stats(self):
@@ -137,14 +138,14 @@ class LtProfileScraperPipeline:
         df_gs = pd.DataFrame(self.general_stats, index=[0])
         df_gs.to_csv(f"output/general_stats.csv")
 
-    def save_firm_stats(self, Firm_URL):
+    def save_firm_stats(self, firm_url):
         #
         # Firm Stats Recorder
         #
-        if Firm_URL in self.firms_stats:
-            self.firms_stats[Firm_URL] = self.firms_stats[Firm_URL] + 1
+        if firm_url in self.firms_stats:
+            self.firms_stats[firm_url] = self.firms_stats[firm_url] + 1
         else:
-            self.firms_stats[Firm_URL] = 1
+            self.firms_stats[firm_url] = 1
         df_fs = pd.DataFrame(self.firms_stats, index=[0])
         df_fs.to_csv(f"output/firms_stats.csv")
 

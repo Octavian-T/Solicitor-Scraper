@@ -58,36 +58,37 @@ class BioParser:
             return None
 
     def parse_title(self, response, css):
-        if css[0] == "/" or css[0] == "(":
-            try:
-                title = response.xpath(f"{css}/text()[normalize-space()]").get()
-            except Exception as e:
-                print(e)
-                return None
-        elif "/text()" in css:
-            try:
-                title = response.xpath(f"{css}").get()
-            except Exception as e:
-                print(e)
-                return None
-        else:
-            try:
-                title = response.css(f"{css}::text").get()
-            except Exception as e:
-                print(e)
-                return None
-
-        if title:
-            try:
-                for index, row in self.titles_long.iterrows():
-                    if any(re.findall(rf"{row['title']}", title, re.IGNORECASE)):
-                        return row["title"]
-                for index, row in self.titles.iterrows():
-                    if any(re.findall(rf"{row['title']}", title, re.IGNORECASE)):
-                        return row["title"]
-                return None
-            except Exception as e:
-                print(e)
-                return None
-        else:
-            return None
+        for css_ in css:
+            if css_ == "!!empty":
+                continue
+            elif "/text()" in css_:
+                try:
+                    title = response.xpath(f"{css_}").get()
+                except Exception as e:
+                    print(e)
+                    continue
+            elif css_[0] == "/" or css_[0] == "(":
+                try:
+                    title = response.xpath(f"{css_}/text()[normalize-space()]").get()
+                except Exception as e:
+                    print(e)
+                    continue
+            else:
+                try:
+                    title = response.css(f"{css_}::text").get()
+                except Exception as e:
+                    print(e)
+                    continue
+            if title:
+                try:
+                    for index, row in self.titles_long.iterrows():
+                        if any(re.findall(rf"{row['title']}", title, re.IGNORECASE)):
+                            return row["title"]
+                    for index, row in self.titles.iterrows():
+                        if any(re.findall(rf"{row['title']}", title, re.IGNORECASE)):
+                            return row["title"]
+                except Exception as e:
+                    print(e)
+            else:
+                continue
+        return None

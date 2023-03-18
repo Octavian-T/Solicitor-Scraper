@@ -14,7 +14,7 @@ class ProfileSpider(scrapy.Spider):
         self.BP = BioParser()
 
     def start_requests(self):
-        links_df = pd.read_csv("output/links.csv", encoding="latin-1")
+        links_df = pd.read_csv("output/links.csv")
         for index, row in links_df.iterrows():
             yield scrapy.Request(
                 url=row["link"],
@@ -28,6 +28,7 @@ class ProfileSpider(scrapy.Spider):
         #
         name_css = self.setting.loc[self.setting["firm"] == firm]["name_css"].values[0]
         title_css = self.setting.loc[self.setting["firm"] == firm]["title_css"].values[0]
+        title_2_css = self.setting.loc[self.setting["firm"] == firm]["title_2_css"].values[0]
 
         #
         # section css
@@ -65,7 +66,7 @@ class ProfileSpider(scrapy.Spider):
             "Mobile": self.CP.parse_phone(html, mobile=True),
             "Email": self.CP.parse_email(html=html, name=name),
             "Linkedin": self.CP.parse_linkedin(html),
-            "Title": self.BP.parse_title(response=response, css=title_css),
+            "Title": self.BP.parse_title(response=response, css=[title_css, title_2_css]),
             "Bio": "null",
             "Sector": "null"
         }
