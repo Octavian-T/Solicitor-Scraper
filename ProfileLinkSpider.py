@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import time
 
 
-class LinkLoader:
+class ProfileLinkSpider:
     def __init__(self):
         # driver
         self.driver = webdriver.Firefox()
@@ -31,7 +31,7 @@ class LinkLoader:
         for index, url in self.directory.iterrows():
             try:
                 self.driver.get(url[1])
-                time.sleep(3)
+                time.sleep(2)
             except Exception as e:
                 print("error: could not load url")
                 print(e)
@@ -44,6 +44,7 @@ class LinkLoader:
         self.driver.close()
 
     def handle(self, url):
+
         # prepare page, usually cookies
         before = self.setting.loc[self.setting["firm"] == url[0]]["before"].values[0]
         if before != "empty":
@@ -61,14 +62,14 @@ class LinkLoader:
                 print(e)
                 pass
             else:
-                time.sleep(3)
+                time.sleep(1)
         else:
             print("error: no before element found for url")
 
         # scroll down to load links
         # before checking if links are present
         self.scroll_down()
-        time.sleep(3)
+        time.sleep(1)
 
         # check links are present (and parse into memory)
         if not self.parse_links(url):

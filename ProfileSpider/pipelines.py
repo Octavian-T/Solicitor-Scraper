@@ -10,7 +10,7 @@ import requests
 import json
 
 
-class LtProfileScraperPipeline:
+class ProfileSpiderPipeline:
     def __init__(self):
         #
         # Stats
@@ -96,7 +96,7 @@ class LtProfileScraperPipeline:
                             profiles_dict["linkedin"] = linkedin
                         counter = counter + 1
 
-            response = self.send_lt(profiles_dict, dont_send=True)
+            response = self.send_lt(profiles_dict, dont_send=False)
             if response is not False and response["data"][0]["result"]["matched"]:
                 self.general_stats["matches"] = self.general_stats["matches"] + 1
                 print(f"response: {response}")

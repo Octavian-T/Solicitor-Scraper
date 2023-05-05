@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'LT_Profile_Scraper'
+BOT_NAME = 'ProfileSpider'
 
-SPIDER_MODULES = ['LT_Profile_Scraper.spiders']
-NEWSPIDER_MODULE = 'LT_Profile_Scraper.spiders'
+SPIDER_MODULES = ['ProfileSpider']
+NEWSPIDER_MODULE = 'ProfileSpider'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -64,7 +64,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'LT_Profile_Scraper.pipelines.LtProfileScraperPipeline': 300,
+   'ProfileSpider.pipelines.ProfileSpiderPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
